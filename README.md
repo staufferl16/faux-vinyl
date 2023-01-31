@@ -12,6 +12,8 @@ the background.  Sit back.  Relax.  Enjoy a little time to yourself.
 
 
 ## Eventually
+Soon, I'll have something available at `fauxvinyl.net`.
+
 Maybe one day I can expand this to let people share their own faux vinyl recommendations.  I'll get
 to that later.
 
