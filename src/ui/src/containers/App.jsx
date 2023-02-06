@@ -1,4 +1,4 @@
-// TODO: Move these assets or get rid of them - whichever is easiest
+import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
