@@ -1,6 +1,7 @@
 .git
 .claude
-.env
+**/.env
+**/.env.*
 src
 README.md
 **/node_modules
