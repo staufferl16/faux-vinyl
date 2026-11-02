@@ -15,6 +15,7 @@ export default function App() {
   return (
     <main>
       <h1>Faux Vinyl</h1>
+      <p>Hello, world!</p>
       <p>{health}</p>
     </main>
   );
