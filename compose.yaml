@@ -1,0 +1,43 @@
+name: faux-vinyl
+
+services:
+  backend:
+    build:
+      context: .
+      target: backend-dev
+    env_file: .env
+    ports:
+      # Host port 5000 is taken by AirPlay Receiver on macOS.
+      - "127.0.0.1:5001:5000"
+    volumes:
+      - ./backend:/app
+      - db-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:5000/api/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  frontend:
+    build:
+      context: .
+      target: frontend-dev
+    environment:
+      VITE_PROXY_TARGET: http://backend:5000
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173/').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  db-data:
+  frontend-node-modules:
