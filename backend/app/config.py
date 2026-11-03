@@ -9,7 +9,7 @@ def secret_key():
 
 
 def database_url():
-    return os.environ.get("DATABASE_URL", "sqlite:///app.db")
+    return os.environ.get("DATABASE_URL", "sqlite:///faux_vinyl.db")
 
 
 def frontend_dist():
