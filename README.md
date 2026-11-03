@@ -22,7 +22,7 @@ to that later.
 
 ### Local stack
 - [x] Run React (Vite) and Flask with Docker Compose, with live reload
-- [x] Set up SQLite in WAL mode, with Alembic and a first migration for `users` and `spotify_tokens`
+- [x] Set up SQLite in WAL mode, with Alembic and a first migration for `users`, `music_providers` and `music_provider_users`
 - [x] Add `.env.example` and ignore real `.env` files
 - [x] Add a production image where Flask serves the built UI
 
