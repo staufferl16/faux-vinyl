@@ -18,6 +18,29 @@ Maybe one day I can expand this to let people share their own faux vinyl recomme
 to that later.
 
 
+## Task list
+
+### Local stack
+- [x] Run React (Vite) and Flask with Docker Compose, with live reload
+- [x] Set up SQLite in WAL mode, with Alembic and a first migration for `users` and `spotify_tokens`
+- [x] Add `.env.example` and ignore real `.env` files
+- [x] Add a production image where Flask serves the built UI
+
+### Spotify auth
+- [ ] Register a Spotify developer app with the redirect URI `http://127.0.0.1:5173/auth/callback`
+- [ ] Allowlist test users in the Spotify developer dashboard
+- [ ] Add `/auth/login`, redirecting to Spotify with `state`
+- [ ] Add `/auth/callback`, exchanging the code, storing tokens and setting an httpOnly session cookie
+- [ ] Add `/auth/logout` and `/api/me`
+- [ ] Encrypt refresh tokens at rest
+- [ ] Add a Spotify client that refreshes tokens on demand and handles 429s (`Retry-After`, `QUOTA_EXCEEDED`)
+
+### Deployment
+- [ ] Choose a host with a persistent disk (a small VPS, Fly.io or Render)
+- [ ] Refuse to start in production with the placeholder `SECRET_KEY`
+- [ ] Publish at `fauxvinyl.net`
+
+
 ## Inspiration
 https://poolsuite.net/
 
