@@ -17,6 +17,48 @@ Soon, I'll have something available at `fauxvinyl.net`.
 Maybe one day I can expand this to let people share their own faux vinyl recommendations.  I'll get
 to that later.
 
+I also want an option for the player to play music from my personal library, not just Spotify.  How that
+works is still to be decided.
+
+
+## How the music works
+I curate a few Spotify playlists.  The backend syncs the albums in them and stores the list.  The player
+picks a random album from that list and plays it from start to finish, like someone spinning a record.
+When the album ends, it picks another.  If you leave and come back, it picks a fresh one.
+
+- Albums and EPs count.  Singles and compilations don't.
+- Spotify has no EP type.  The API reports EPs as `single`, so a "single" with 4 or more tracks counts as
+  an EP.  (Spotify calls a release an EP when it has 4 to 6 tracks and runs under 30 minutes.  Track count
+  alone is close enough here.)
+- Each album is played whole, in order, with shuffle and repeat turned off.
+
+
+## Spotify restrictions
+These are Spotify's rules for apps in Development Mode, as of February 2026.  For now, I accept them.
+
+- **Premium required.**  Playback in the browser uses the Web Playback SDK, which only works for Premium
+  listeners.  The app owner (me) also needs Premium, or the app stops working.
+- **5 users.**  Development Mode apps allow 5 allowlisted users.  Extended Quota Mode removes the limit,
+  but Spotify only grants it to established businesses, so a public `fauxvinyl.net` isn't possible on
+  Spotify alone.
+- **Desktop only.**  The Web Playback SDK doesn't support mobile browsers.
+- **Own playlists only.**  `GET /playlists/{id}/items` (renamed from `/tracks`) only returns the contents of
+  playlists the signed-in user owns or collaborates on.  Anything else returns `403`, including Spotify's
+  own playlists like Discover Weekly.  This is why the albums come from my curated playlists, synced with my
+  own token.
+- **No bulk lookups.**  `GET /albums`, `GET /tracks` and `GET /artists` (several at once) were removed.
+  Playback uses the album URI directly, so album track lists aren't needed.
+- **Shared rate limit.**  Development Mode quotas count across the whole developer account.  A `429`
+  response includes `Retry-After`, and sometimes `"reason": "QUOTA_EXCEEDED"`.  Syncs only refetch a
+  playlist when its `snapshot_id` changes.
+- **Removed fields.**  `popularity`, `label` and `available_markets` no longer come back on albums and tracks,
+  and `GET /me` no longer returns `email`, `country` or `product`.
+
+References:
+[February 2026 migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide),
+[February 2026 changelog](https://developer.spotify.com/documentation/web-api/references/changes/february-2026),
+[July 2026 changelog](https://developer.spotify.com/documentation/web-api/references/changes/july-2026)
+
 
 ## Task list
 
@@ -34,6 +76,23 @@ to that later.
 - [ ] Add `/auth/logout` and `/api/me`
 - [ ] Encrypt refresh tokens at rest
 - [ ] Add a Spotify client that refreshes tokens on demand and handles 429s (`Retry-After`, `QUOTA_EXCEEDED`)
+- [ ] Request the scopes `streaming`, `user-read-email`, `user-read-private`, `user-modify-playback-state`,
+  `user-read-playback-state`, `playlist-read-private` and `playlist-read-collaborative`
+- [ ] Add `/api/spotify/token`, giving the browser a fresh access token (refresh tokens stay on the server)
+
+### Curated playlists
+- [ ] Add a migration for `playlists` (with `snapshot_id`), `albums` and `playlist_albums`
+- [ ] Sync a curated playlist with my token: page through `/playlists/{id}/items`, keep albums and EPs,
+  skip singles, compilations, episodes and local files, and remove duplicate albums
+- [ ] Re-sync only when the playlist's `snapshot_id` changes
+
+### Player
+- [ ] Load the Web Playback SDK and register the browser as a playback device
+- [ ] Add a "drop the needle" button, since browsers block audio until the user clicks
+- [ ] Pick a random album without repeats until every album has played
+- [ ] Play the album with `context_uri`, with shuffle and repeat off
+- [ ] Detect when the album ends, or when Spotify autoplay starts a different album, and pick the next one
+- [ ] Disconnect the player when the listener leaves
 
 ### Deployment
 - [ ] Choose a host with a persistent disk (a small VPS, Fly.io or Render)
