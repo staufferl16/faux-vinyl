@@ -1,0 +1,13 @@
+.git
+.claude
+**/.env
+**/.env.*
+src
+README.md
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/*.db
+**/*.db-shm
+**/*.db-wal
