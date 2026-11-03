@@ -11,6 +11,11 @@ if TYPE_CHECKING:
     from .music_provider_user import MusicProviderUser
 
 
+class ProviderName(enum.Enum):
+    spotify = "spotify"
+    native = "native"  # Faux Vinyl's own mp3s
+
+
 class AuthType(enum.Enum):
     protected = "protected"  # per-user OAuth, e.g. Spotify
     public = "public"  # app-level credentials only
@@ -22,7 +27,16 @@ class MusicProvider(TimestampMixin, Base):
     __tablename__ = "music_providers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(64), unique=True)
+    name: Mapped[ProviderName] = mapped_column(
+        Enum(
+            ProviderName,
+            name="provider_name",
+            native_enum=False,
+            create_constraint=True,
+        ),
+        unique=True,
+    )
+    display_name: Mapped[str] = mapped_column(String(64))
     url: Mapped[str | None] = mapped_column(String(255))
     auth_type: Mapped[AuthType] = mapped_column(
         Enum(AuthType, name="auth_type", native_enum=False, create_constraint=True)

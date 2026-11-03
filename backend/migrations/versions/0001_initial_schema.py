@@ -11,6 +11,7 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+PROVIDER_NAMES = ("spotify", "native")
 AUTH_TYPES = ("protected", "public", "unsupported", "open")
 
 
@@ -41,7 +42,17 @@ def upgrade():
     music_providers = op.create_table(
         "music_providers",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("name", sa.String(length=64), nullable=False),
+        sa.Column(
+            "name",
+            sa.Enum(
+                *PROVIDER_NAMES,
+                name="provider_name",
+                native_enum=False,
+                create_constraint=True,
+            ),
+            nullable=False,
+        ),
+        sa.Column("display_name", sa.String(length=64), nullable=False),
         sa.Column("url", sa.String(length=255), nullable=True),
         sa.Column(
             "auth_type",
@@ -87,10 +98,16 @@ def upgrade():
         [
             {
                 "name": "spotify",
+                "display_name": "Spotify",
                 "url": "https://api.spotify.com/v1",
                 "auth_type": "protected",
             },
-            {"name": "native", "url": None, "auth_type": "open"},
+            {
+                "name": "native",
+                "display_name": "Faux Vinyl Native",
+                "url": None,
+                "auth_type": "open",
+            },
         ],
     )
 

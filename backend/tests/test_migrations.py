@@ -8,7 +8,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import make_engine
-from app.models import AuthType, MusicProvider, MusicProviderUser, User
+from app.models import (
+    AuthType,
+    MusicProvider,
+    MusicProviderUser,
+    ProviderName,
+    User,
+)
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TABLES = {"users", "music_providers", "music_provider_users"}
@@ -29,7 +35,7 @@ def session(database_url):
 
 def add_spotify_account(session, user, provider_user_id="spotify-user"):
     spotify = session.scalars(
-        select(MusicProvider).where(MusicProvider.name == "spotify")
+        select(MusicProvider).where(MusicProvider.name == ProviderName.spotify)
     ).one()
     account = MusicProviderUser(
         user=user, provider=spotify, provider_user_id=provider_user_id
@@ -66,10 +72,17 @@ def test_downgrade_removes_tables(database_url):
 def test_upgrade_seeds_providers(session):
     providers = {p.name: p for p in session.scalars(select(MusicProvider))}
 
-    assert providers["spotify"].auth_type is AuthType.protected
-    assert providers["spotify"].url == "https://api.spotify.com/v1"
-    assert providers["native"].auth_type is AuthType.open
-    assert providers["native"].url is None
+    assert set(providers) == set(ProviderName)
+
+    spotify = providers[ProviderName.spotify]
+    assert spotify.display_name == "Spotify"
+    assert spotify.auth_type is AuthType.protected
+    assert spotify.url == "https://api.spotify.com/v1"
+
+    native = providers[ProviderName.native]
+    assert native.display_name == "Faux Vinyl Native"
+    assert native.auth_type is AuthType.open
+    assert native.url is None
 
 
 def test_new_user_defaults(session):
@@ -101,11 +114,23 @@ def test_deleting_user_deletes_accounts(session):
     assert session.scalars(select(MusicProviderUser)).all() == []
 
 
-def test_invalid_auth_type_is_rejected(session):
+def test_invalid_provider_name_is_rejected(session):
     with pytest.raises(IntegrityError):
         session.execute(
             text(
-                "INSERT INTO music_providers (name, auth_type) "
-                "VALUES ('bogus', 'secret')"
+                "INSERT INTO music_providers (name, display_name, auth_type) "
+                "VALUES ('bogus', 'Bogus', 'open')"
+            )
+        )
+
+
+def test_invalid_auth_type_is_rejected(session):
+    session.execute(text("DELETE FROM music_providers WHERE name = 'native'"))
+
+    with pytest.raises(IntegrityError):
+        session.execute(
+            text(
+                "INSERT INTO music_providers (name, display_name, auth_type) "
+                "VALUES ('native', 'Native', 'secret')"
             )
         )
